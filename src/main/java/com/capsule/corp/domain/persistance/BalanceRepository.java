@@ -1,6 +1,6 @@
 package com.capsule.corp.domain.persistance;
 
-import com.capsule.corp.infrastructure.http.controller.resources.Balance;
+import com.capsule.corp.infrastructure.http.resources.Balance;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

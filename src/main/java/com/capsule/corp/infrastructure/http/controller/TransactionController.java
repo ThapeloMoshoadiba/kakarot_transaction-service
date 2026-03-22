@@ -1,10 +1,8 @@
 package com.capsule.corp.infrastructure.http.controller;
 
 import com.capsule.corp.domain.service.TransactionService;
-import com.capsule.corp.infrastructure.http.controller.resources.Balance;
-import com.capsule.corp.infrastructure.http.controller.resources.Transaction;
-import com.capsule.corp.infrastructure.http.controller.resources.request.PaymentRequest;
-import com.capsule.corp.infrastructure.http.controller.resources.response.PaymentResponse;
+import com.capsule.corp.infrastructure.http.controller.resources.request.TransactionRequest;
+import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionResponse;
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +29,18 @@ public class TransactionController {
 
     private final TransactionService transactionService;
 
-    @Operation(summary = "Make Payment")
-    @PutMapping
+    @Operation(summary = "Open Account Transaction")
+    @PutMapping("/open")
     // include entityId in header to figure out source OR can we get it from JWT token?
-    public PaymentResponse payment(@RequestBody final PaymentRequest paymentRequest) {
-        return transactionService.payment("", paymentRequest);
+    public TransactionResponse openingTransaction(@RequestBody final TransactionRequest transactionRequest) {
+        return transactionService.openingTransaction("", transactionRequest);
+    }
+
+    @Operation(summary = "Make Payment")
+    @PutMapping("/pay")
+    // include entityId in header to figure out source OR can we get it from JWT token?
+    public TransactionResponse payment(@RequestBody final TransactionRequest transactionRequest) {
+        return transactionService.paymentTransaction("", transactionRequest);
     }
 
     @Operation(summary = "Retrieve Transactions")

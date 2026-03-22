@@ -1,9 +1,11 @@
 package com.capsule.corp.domain.mapper;
 
-import com.capsule.corp.infrastructure.http.controller.resources.Balance;
-import com.capsule.corp.infrastructure.http.controller.resources.request.PaymentRequest;
-import com.capsule.corp.infrastructure.http.controller.resources.Transaction;
+import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionResponse;
+import com.capsule.corp.infrastructure.http.resources.Balance;
+import com.capsule.corp.infrastructure.http.controller.resources.request.TransactionRequest;
+import com.capsule.corp.infrastructure.http.resources.Transaction;
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
+import com.capsule.corp.infrastructure.http.resources.enums.TransactionType;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -13,21 +15,23 @@ import java.util.List;
 import java.util.UUID;
 
 @Mapper(componentModel = "spring",
-        imports = {UUID.class, LocalDate.class, LocalDate.class})
+        imports = {UUID.class, LocalDate.class, LocalDate.class, TransactionType.class})
 public interface TransactionMapper {
 
     @Mapping(target = "initiator", source = "entityId")
-    @Mapping(target = "amount", source = "paymentRequest.amount")
-    @Mapping(target = "timeStamp", expression = "java(LocalDate.now())")
-    @Mapping(target = "accountNumber", source = "paymentRequest.accountNumber")
-    @Mapping(target = "transactionId", source = "paymentRequest.paymentId")
-    Transaction mapTransactionRequest(String entityId, PaymentRequest paymentRequest);
+    @Mapping(target = "amount", source = "transactionRequest.amount")
+    @Mapping(target = "timestamp", expression = "java(LocalDate.now())")
+    @Mapping(target = "accountNumber", source = "transactionRequest.accountNumber")
+    @Mapping(target = "transactionId", source = "transactionRequest.transactionId")
+    Transaction mapTransaction(String entityId, TransactionRequest transactionRequest);
 
-
-    @Mapping(target = "updatedAt", expression = "java(LocalDate.now())")
     @Mapping(target = "accountNumber", source = "accountNumber")
     @Mapping(target = "amount", source = "balance")
-    Balance mapUpdateBalance(String accountNumber, BigDecimal balance);
+    Balance mapBalance(String accountNumber, BigDecimal balance);
+
+    @Mapping(target = "transactionId", source = "transactionRequest.transactionId")
+    @Mapping(target = "success", source = "success")
+    TransactionResponse mapTransactionResponse(final TransactionRequest transactionRequest, final boolean success);
 
     TransactionsResponse mapTransactionResponse(List<Transaction> transactions, BigDecimal balance);
 

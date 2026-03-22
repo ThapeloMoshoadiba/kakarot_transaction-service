@@ -1,0 +1,90 @@
+package com.capsule.corp.domain.mapper;
+
+import com.capsule.corp.infrastructure.http.controller.resources.request.TransactionRequest;
+import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionResponse;
+import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
+import com.capsule.corp.infrastructure.http.resources.Balance;
+import com.capsule.corp.infrastructure.http.resources.Transaction;
+import com.capsule.corp.infrastructure.http.resources.enums.TransactionType;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import javax.annotation.processing.Generated;
+import org.springframework.stereotype.Component;
+
+@Generated(
+    value = "org.mapstruct.ap.MappingProcessor",
+    date = "2026-03-23T01:22:57+0200",
+    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.3 (Amazon.com Inc.)"
+)
+@Component
+public class TransactionMapperImpl implements TransactionMapper {
+
+    @Override
+    public Transaction mapTransaction(String entityId, TransactionRequest transactionRequest) {
+        if ( entityId == null && transactionRequest == null ) {
+            return null;
+        }
+
+        Transaction.TransactionBuilder transaction = Transaction.builder();
+
+        if ( transactionRequest != null ) {
+            transaction.amount( transactionRequest.getAmount() );
+            transaction.accountNumber( transactionRequest.getAccountNumber() );
+            transaction.transactionId( transactionRequest.getTransactionId() );
+        }
+        transaction.initiator( entityId );
+        transaction.timestamp( LocalDate.now() );
+
+        return transaction.build();
+    }
+
+    @Override
+    public Balance mapBalance(String accountNumber, BigDecimal balance) {
+        if ( accountNumber == null && balance == null ) {
+            return null;
+        }
+
+        Balance.BalanceBuilder balance1 = Balance.builder();
+
+        balance1.accountNumber( accountNumber );
+        balance1.amount( balance );
+
+        return balance1.build();
+    }
+
+    @Override
+    public TransactionResponse mapTransactionResponse(TransactionRequest transactionRequest, boolean success) {
+        if ( transactionRequest == null ) {
+            return null;
+        }
+
+        TransactionResponse.TransactionResponseBuilder transactionResponse = TransactionResponse.builder();
+
+        if ( transactionRequest != null ) {
+            transactionResponse.transactionId( transactionRequest.getTransactionId() );
+        }
+        transactionResponse.success( success );
+
+        return transactionResponse.build();
+    }
+
+    @Override
+    public TransactionsResponse mapTransactionResponse(List<Transaction> transactions, BigDecimal balance) {
+        if ( transactions == null && balance == null ) {
+            return null;
+        }
+
+        TransactionsResponse.TransactionsResponseBuilder transactionsResponse = TransactionsResponse.builder();
+
+        List<Transaction> list = transactions;
+        if ( list != null ) {
+            transactionsResponse.transactions( new ArrayList<Transaction>( list ) );
+        }
+        transactionsResponse.balance( balance );
+
+        return transactionsResponse.build();
+    }
+}

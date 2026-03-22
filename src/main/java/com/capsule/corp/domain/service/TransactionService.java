@@ -1,21 +1,26 @@
 package com.capsule.corp.domain.service;
 
+import com.capsule.corp.common.exception.BalanceNotFoundException;
+import com.capsule.corp.common.exception.TransactionsNotFoundException;
 import com.capsule.corp.domain.mapper.TransactionMapper;
 import com.capsule.corp.domain.persistance.BalanceRepository;
 import com.capsule.corp.domain.persistance.TransactionRepository;
+import com.capsule.corp.domain.validation.rules.PaymentRules;
 import com.capsule.corp.infrastructure.http.clients.accounts.AccountServiceClient;
-import com.capsule.corp.infrastructure.http.controller.resources.Account;
-import com.capsule.corp.infrastructure.http.controller.resources.Balance;
-import com.capsule.corp.infrastructure.http.controller.resources.request.PaymentRequest;
-import com.capsule.corp.infrastructure.http.controller.resources.response.PaymentResponse;
-import com.capsule.corp.infrastructure.http.controller.resources.Transaction;
+import com.capsule.corp.infrastructure.http.clients.accounts.resources.AccountDetailedResponse;
+import com.capsule.corp.infrastructure.http.resources.Balance;
+import com.capsule.corp.infrastructure.http.controller.resources.request.TransactionRequest;
+import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionResponse;
+import com.capsule.corp.infrastructure.http.resources.enums.EntryType;
+import com.capsule.corp.infrastructure.http.resources.Transaction;
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
+import com.capsule.corp.infrastructure.http.resources.enums.TransactionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,74 +33,72 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final BalanceRepository balanceRepository;
     private final TransactionMapper transactionMapper;
+    private final PaymentRules paymentRules;
 
-    public PaymentResponse payment(String entityId, PaymentRequest paymentRequest) {
-        /*
-            1. Get account via accountServiceClient.getAccount(paymentRequest.getAccountNumber())
-            2. Get balance via getBalance(paymentRequest.getAccountNumber()).getAmount()
+    public TransactionResponse openingTransaction(String entityId, TransactionRequest transactionRequest) {
+        try {
+            Transaction transaction = transactionMapper.mapTransaction(entityId, transactionRequest);
+            transaction.setEntryType(EntryType.DEBIT);
+            transaction.setTransactionType(TransactionType.ACCOUNT_OPENING);
 
-        */
+            Balance balance = transactionMapper.mapBalance(transactionRequest.getAccountNumber(), transactionRequest.getAmount());
+            balance.setCreatedAt(LocalDate.now());
 
-        // 1. Account account = accountServiceClient.getAccount(paymentRequest.getAccountNumber());
+            transactionRepository.save(transaction);
+            balanceRepository.save(balance);
 
-        // 2.
-        BigDecimal balanceAmount = getBalance(paymentRequest.getAccountNumber()).getAmount();
-        Balance balance;
-
-        // if (account.getStatus() is "OPEN" && !(balanceAmount.compareTo(BigDecimal.ZERO) <= 0)){ execute the below };
-
-        // 3.
-        transactionRepository.save(transactionMapper.mapTransactionRequest(entityId, paymentRequest));
-
-        if (!(balanceAmount.compareTo(BigDecimal.ZERO) <= 0)) {
-            // 4.
-            BigDecimal newBalance = balanceAmount.subtract(paymentRequest.getAmount());
-            balanceRepository.save(transactionMapper.mapUpdateBalance(paymentRequest.getAccountNumber(), newBalance));
-        } else {
-            // throw some error because balance is either 0 or negative OR account is not OPEN
+            return transactionMapper.mapTransactionResponse(transactionRequest, true);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return transactionMapper.mapTransactionResponse(transactionRequest, false);
         }
+    }
 
-        return PaymentResponse.builder().build();
+    public TransactionResponse paymentTransaction(String entityId, TransactionRequest transactionRequest) {
+        try {
+            AccountDetailedResponse account = accountServiceClient.getAccount(transactionRequest.getAccountNumber());
+            BigDecimal balanceAmount = getBalance(transactionRequest.getAccountNumber()).getAmount();
+
+            paymentRules.canPay(account, balanceAmount);
+
+            Transaction transaction = transactionMapper.mapTransaction(entityId, transactionRequest);
+            transaction.setEntryType(EntryType.CREDIT);
+            transaction.setTransactionType(TransactionType.PAYMENT);
+
+            Balance balance = transactionMapper.mapBalance(transactionRequest.getAccountNumber(), balanceAmount.subtract(transactionRequest.getAmount()));
+            balance.setUpdatedAt(LocalDate.now());
+
+            transactionRepository.save(transaction);
+            balanceRepository.save(balance);
+
+            return transactionMapper.mapTransactionResponse(transactionRequest, true);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return transactionMapper.mapTransactionResponse(transactionRequest, false);
+        }
     }
 
     public TransactionsResponse getTransactions(String accountNumber) {
-        BigDecimal balanceAmount = getBalance(accountNumber).getAmount();
-    /*
 
-        1. get all transactions
-        2. get latest balance
+            BigDecimal balanceAmount = getBalance(accountNumber).getAmount();
+            Optional<List<Transaction>> transactions = transactionRepository.findByAccountNumber(accountNumber);
 
-    */
+            if (transactions.isEmpty() || transactions.get().getFirst() == null) {
+                throw new TransactionsNotFoundException("No transactions found for account");
+            }
 
-        TransactionsResponse transactionsResponse;
-        List<Transaction> transactions =  new ArrayList<>();
-        Optional<Balance> balance = balanceRepository.findByAccountNumber(accountNumber);
-        if (balance.isPresent()) {
-            balanceAmount = balance.get().getAmount();
-        }
+            return transactionMapper.mapTransactionResponse(transactions.get(), balanceAmount);
 
-        transactionRepository.findByAccountNumber(accountNumber); // do a loop to get all and add to a transaction list
-
-        return transactionMapper.mapTransactionResponse(transactions, balanceAmount);
     }
 
     public Balance getBalance(String accountNumber) {
         Optional<Balance> balance = balanceRepository.findByAccountNumber(accountNumber);
-        if (balance.isPresent()) {
-            return balance.get();
+
+        if(balance.isEmpty()){
+            throw new BalanceNotFoundException("Balance not found for account");
         }
-        // else throw some balance exception
-        return Balance.builder().build();
-    }
 
-    public Account getAccount(String accountNumber) {
-        // accountServiceClient.getAccount(paymentRequest.getAccountNumber());
-        return Account.builder().build();
+        return balance.get();
     }
-
-//    public Client getClient(String accountNumber) {
-//        // accountServiceClient.getAccount(paymentRequest.getAccountNumber());
-//        return Account.builder().build();
-//    }
 
 }
