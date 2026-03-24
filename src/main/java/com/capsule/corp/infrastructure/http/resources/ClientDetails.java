@@ -11,22 +11,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ClientDetails {
 
-    String clientId;
-    String createdAt;
-    String updatedAt;
-    String cifNumber;
-    String title;
-    String firstName;
-    String middleName;
-    String lastName;
-    String idNumber;
-    String gender;
-    String dateOfBirth;
-    String address;
-    String cellphoneNumber;
-    String email;
-    String credit;
-    String employmentStatus;
-    String sourceOfFunds;
-    String  verifiedAnnualIncome;
+  String clientId;
+  String createdAt;
+  String updatedAt;
+  String cifNumber;
+  String title;
+  String firstName;
+  String middleName;
+  String lastName;
+  String idNumber;
+  String gender;
+  String dateOfBirth;
+  String address;
+  String cellphoneNumber;
+  String email;
+  String credit;
+  String employmentStatus;
+  String sourceOfFunds;
+  String verifiedAnnualIncome;
 }

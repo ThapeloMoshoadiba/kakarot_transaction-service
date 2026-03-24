@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Account {
 
-    String accountId;
-    String createdAt;
-    String cifNumber;
-    String accountNumber;
-    String accountStatus;
-    String initialCreditAmount;
-    String closedAt;
-    String reasonForClose;
+  String accountId;
+  String createdAt;
+  String cifNumber;
+  String accountNumber;
+  String accountStatus;
+  String initialCreditAmount;
+  String closedAt;
+  String reasonForClose;
 }

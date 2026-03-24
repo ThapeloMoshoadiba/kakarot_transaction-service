@@ -8,8 +8,8 @@ import lombok.Data;
 @Data
 @Builder
 public class AccountDetailedResponse {
-    ClientDetails clientDetails;
-    Account account;
-    String reason;
-    boolean success;
+  ClientDetails clientDetails;
+  Account account;
+  String reason;
+  boolean success;
 }

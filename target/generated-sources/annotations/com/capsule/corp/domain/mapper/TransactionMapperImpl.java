@@ -7,7 +7,7 @@ import com.capsule.corp.infrastructure.http.resources.Balance;
 import com.capsule.corp.infrastructure.http.resources.Transaction;
 import com.capsule.corp.infrastructure.http.resources.enums.TransactionType;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-23T01:22:57+0200",
+    date = "2026-03-24T16:28:14+0200",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.3 (Amazon.com Inc.)"
 )
 @Component
@@ -36,13 +36,13 @@ public class TransactionMapperImpl implements TransactionMapper {
             transaction.transactionId( transactionRequest.getTransactionId() );
         }
         transaction.initiator( entityId );
-        transaction.timestamp( LocalDate.now() );
+        transaction.timestamp( LocalDateTime.now() );
 
         return transaction.build();
     }
 
     @Override
-    public Balance mapBalance(String accountNumber, BigDecimal balance) {
+    public Balance mapBalance(UUID accountNumber, BigDecimal balance) {
         if ( accountNumber == null && balance == null ) {
             return null;
         }

@@ -13,6 +13,7 @@ com/capsule/corp/infrastructure/http/controller/resources/request/TransactionReq
 com/capsule/corp/infrastructure/http/resources/ClientDetails$ClientDetailsBuilder.class
 com/capsule/corp/infrastructure/http/controller/resources/request/TransactionRequest$TransactionRequestBuilder.class
 com/capsule/corp/common/exception/BalanceNotFoundException.class
+META-INF/spring-configuration-metadata.json
 com/capsule/corp/common/exception/BusinessRuleException.class
 com/capsule/corp/common/config/WebExchangeLoggingInterceptor$BufferingClientHttpResponseWrapper.class
 com/capsule/corp/infrastructure/http/resources/enums/TransactionType.class
