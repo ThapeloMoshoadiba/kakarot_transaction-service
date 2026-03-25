@@ -38,6 +38,6 @@ public class AccountServiceClient {
     } catch (Exception e) {
       log.error("Error Getting Account: [{}] [{}]", accountNumber, e.getMessage());
     }
-    return null;
+    return AccountDetailedResponse.builder().success(false).build();
   }
 }

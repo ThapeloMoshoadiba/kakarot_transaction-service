@@ -1,7 +1,6 @@
 package com.capsule.corp.domain.mapper;
 
 import com.capsule.corp.infrastructure.http.controller.resources.request.TransactionRequest;
-import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionResponse;
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
 import com.capsule.corp.infrastructure.http.resources.Balance;
 import com.capsule.corp.infrastructure.http.resources.Transaction;
@@ -21,18 +20,16 @@ public interface TransactionMapper {
   @Mapping(target = "initiator", source = "entityId")
   @Mapping(target = "amount", source = "transactionRequest.amount")
   @Mapping(target = "timestamp", expression = "java(LocalDateTime.now())")
+  @Mapping(target = "transactionId", source = "transactionId")
   @Mapping(target = "accountNumber", source = "transactionRequest.accountNumber")
-  @Mapping(target = "transactionId", source = "transactionRequest.transactionId")
-  Transaction mapTransaction(String entityId, TransactionRequest transactionRequest);
-
-  @Mapping(target = "accountNumber", source = "accountNumber")
-  @Mapping(target = "amount", source = "balance")
-  Balance mapBalance(UUID accountNumber, BigDecimal balance);
-
-  @Mapping(target = "transactionId", source = "transactionRequest.transactionId")
-  @Mapping(target = "success", source = "success")
-  TransactionResponse mapTransactionResponse(
-      final TransactionRequest transactionRequest, final boolean success);
+  Transaction mapTransaction(
+      String entityId, UUID transactionId, TransactionRequest transactionRequest);
 
   TransactionsResponse mapTransactionResponse(List<Transaction> transactions, BigDecimal balance);
+
+  @Mapping(target = "id", expression = "java(UUID.randomUUID())")
+  @Mapping(target = "createdAt", expression = "java(LocalDateTime.now())")
+  @Mapping(target = "accountNumber", source = "accountNumber")
+  @Mapping(target = "balance", source = "balance")
+  Balance mapBalance(UUID accountNumber, BigDecimal balance);
 }

@@ -27,5 +27,5 @@ public class Balance {
   LocalDateTime createdAt;
   LocalDateTime updatedAt;
   UUID accountNumber;
-  BigDecimal amount;
+  BigDecimal balance;
 }
