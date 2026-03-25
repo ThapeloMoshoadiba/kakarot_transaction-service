@@ -1,5 +1,5 @@
 INSERT INTO transactions (
-                     transaction_id, account_number, transactionType, entryType, timestamp, amount, initiator
+                     transaction_id, account_number, transaction_type, entry_type, timestamp, amount, initiator
 ) VALUES
       ('11111111-1111-1111-2222-111111111111', '11111111-6666-6666-1111-111111111111', 'PAYMENT', 'CREDIT',
        NOW(), 100000, 'Stark'),

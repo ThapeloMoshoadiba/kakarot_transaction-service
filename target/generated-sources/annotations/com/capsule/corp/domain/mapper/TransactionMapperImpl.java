@@ -1,7 +1,6 @@
 package com.capsule.corp.domain.mapper;
 
 import com.capsule.corp.infrastructure.http.controller.resources.request.TransactionRequest;
-import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionResponse;
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
 import com.capsule.corp.infrastructure.http.resources.Balance;
 import com.capsule.corp.infrastructure.http.resources.Transaction;
@@ -16,15 +15,15 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-03-24T16:28:14+0200",
+    date = "2026-03-25T12:15:01+0200",
     comments = "version: 1.5.5.Final, compiler: javac, environment: Java 21.0.3 (Amazon.com Inc.)"
 )
 @Component
 public class TransactionMapperImpl implements TransactionMapper {
 
     @Override
-    public Transaction mapTransaction(String entityId, TransactionRequest transactionRequest) {
-        if ( entityId == null && transactionRequest == null ) {
+    public Transaction mapTransaction(String entityId, UUID transactionId, TransactionRequest transactionRequest) {
+        if ( entityId == null && transactionId == null && transactionRequest == null ) {
             return null;
         }
 
@@ -33,42 +32,12 @@ public class TransactionMapperImpl implements TransactionMapper {
         if ( transactionRequest != null ) {
             transaction.amount( transactionRequest.getAmount() );
             transaction.accountNumber( transactionRequest.getAccountNumber() );
-            transaction.transactionId( transactionRequest.getTransactionId() );
         }
         transaction.initiator( entityId );
+        transaction.transactionId( transactionId );
         transaction.timestamp( LocalDateTime.now() );
 
         return transaction.build();
-    }
-
-    @Override
-    public Balance mapBalance(UUID accountNumber, BigDecimal balance) {
-        if ( accountNumber == null && balance == null ) {
-            return null;
-        }
-
-        Balance.BalanceBuilder balance1 = Balance.builder();
-
-        balance1.accountNumber( accountNumber );
-        balance1.amount( balance );
-
-        return balance1.build();
-    }
-
-    @Override
-    public TransactionResponse mapTransactionResponse(TransactionRequest transactionRequest, boolean success) {
-        if ( transactionRequest == null ) {
-            return null;
-        }
-
-        TransactionResponse.TransactionResponseBuilder transactionResponse = TransactionResponse.builder();
-
-        if ( transactionRequest != null ) {
-            transactionResponse.transactionId( transactionRequest.getTransactionId() );
-        }
-        transactionResponse.success( success );
-
-        return transactionResponse.build();
     }
 
     @Override
@@ -86,5 +55,21 @@ public class TransactionMapperImpl implements TransactionMapper {
         transactionsResponse.balance( balance );
 
         return transactionsResponse.build();
+    }
+
+    @Override
+    public Balance mapBalance(UUID accountNumber, BigDecimal balance) {
+        if ( accountNumber == null && balance == null ) {
+            return null;
+        }
+
+        Balance.BalanceBuilder balance1 = Balance.builder();
+
+        balance1.accountNumber( accountNumber );
+        balance1.balance( balance );
+        balance1.id( UUID.randomUUID() );
+        balance1.createdAt( LocalDateTime.now() );
+
+        return balance1.build();
     }
 }

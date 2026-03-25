@@ -24,7 +24,7 @@ spring:
 app:
   integration:
     account-service:
-      base-url: http://localhost:8081/api/v1/account-service/accounts
+      base-url: http://localhost:8081/api/v1/account-service/account
 
 server:
   port: 8082
