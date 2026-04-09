@@ -1,4 +1,4 @@
-package com.capsule.corp.infrastructure.http.controller.resources.response;
+package com.capsule.corp.infrastructure.http.clients.accounts.resources;
 
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -10,10 +10,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransactionResponse {
+public class BasicAccountRequest {
 
-  UUID transactionId;
-
-  boolean success;
+  UUID accountNumber;
   String reason;
 }

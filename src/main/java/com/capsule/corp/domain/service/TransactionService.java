@@ -1,13 +1,15 @@
 package com.capsule.corp.domain.service;
 
+import com.capsule.corp.common.exception.AccountNotFoundException;
 import com.capsule.corp.common.exception.BalanceNotFoundException;
 import com.capsule.corp.common.exception.TransactionsNotFoundException;
 import com.capsule.corp.domain.mapper.TransactionMapper;
 import com.capsule.corp.domain.persistance.BalanceRepository;
 import com.capsule.corp.domain.persistance.TransactionRepository;
-import com.capsule.corp.domain.validation.rules.PaymentRules;
+import com.capsule.corp.domain.validation.rules.TransactionRules;
 import com.capsule.corp.infrastructure.http.clients.accounts.AccountServiceClient;
 import com.capsule.corp.infrastructure.http.clients.accounts.resources.AccountDetailedResponse;
+import com.capsule.corp.infrastructure.http.clients.accounts.resources.BasicAccountRequest;
 import com.capsule.corp.infrastructure.http.controller.resources.request.TransactionRequest;
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionResponse;
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
@@ -22,6 +24,8 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -29,7 +33,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class TransactionService {
 
-  private final PaymentRules paymentRules;
+  private final TransactionRules transactionRules;
   private final BalanceRepository balanceRepository;
   private final TransactionMapper transactionMapper;
   private final AccountServiceClient accountServiceClient;
@@ -37,18 +41,17 @@ public class TransactionService {
 
   Balance balance;
 
-  public TransactionResponse openingTransaction(
+  public ResponseEntity<TransactionResponse> openingTransaction(
       String entityId, TransactionRequest transactionRequest) {
     UUID transactionId = UUID.randomUUID();
     try {
-      AccountDetailedResponse account =
-          accountServiceClient.getAccount(transactionRequest.getAccountNumber());
+      AccountDetailedResponse account = getAccount(transactionRequest.getAccountNumber());
       Optional<Balance> balance =
           balanceRepository.findByAccountNumber(transactionRequest.getAccountNumber());
       Optional<Transaction> transaction =
           transactionRepository.findByAccountNumberAndTransactionType(
               transactionRequest.getAccountNumber(), TransactionType.ACCOUNT_OPENING);
-      paymentRules.canExecuteOpeningTransaction(account, transaction, balance);
+      transactionRules.canExecuteOpeningTransaction(account, transaction, balance);
 
       Transaction openingTransaction =
           transactionMapper.mapTransaction(entityId, transactionId, transactionRequest);
@@ -62,23 +65,38 @@ public class TransactionService {
       transactionRepository.save(openingTransaction);
       balanceRepository.save(openingBalance);
 
-      return TransactionResponse.builder().transactionId(transactionId).success(true).build();
+      return ResponseEntity.ok(
+          TransactionResponse.builder().transactionId(transactionId).success(true).build());
+    } catch (AccountNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT)
+          .body(
+              TransactionResponse.builder()
+                  .transactionId(transactionId)
+                  .success(false)
+                  .reason(e.getMessage())
+                  .build());
     } catch (Exception e) {
-      log.error(e.getMessage());
-      return TransactionResponse.builder().transactionId(transactionId).success(false).build();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(
+              TransactionResponse.builder()
+                  .transactionId(transactionId)
+                  .success(false)
+                  .reason(e.getMessage())
+                  .build());
     }
   }
 
-  public TransactionResponse paymentTransaction(
+  public ResponseEntity<TransactionResponse> paymentTransaction(
       String entityId, TransactionRequest transactionRequest) {
+    // should not go through for Blocked accounts // this is in the rules already, double-check
+    // functionality
     UUID transactionId = UUID.randomUUID();
     try {
-      AccountDetailedResponse account =
-          accountServiceClient.getAccount(transactionRequest.getAccountNumber());
+      AccountDetailedResponse account = getAccount(transactionRequest.getAccountNumber());
       balance = getBalance(transactionRequest.getAccountNumber());
       BigDecimal balanceAmount = getBalance(transactionRequest.getAccountNumber()).getBalance();
 
-      paymentRules.canPay(account, balanceAmount);
+      transactionRules.canPay(account, balanceAmount);
 
       Transaction transaction =
           transactionMapper.mapTransaction(entityId, transactionId, transactionRequest);
@@ -91,30 +109,127 @@ public class TransactionService {
       transactionRepository.save(transaction);
       balanceRepository.save(balance);
 
-      return TransactionResponse.builder().transactionId(transactionId).success(true).build();
+      if (getBalance(transactionRequest.getAccountNumber()).getBalance().compareTo(BigDecimal.ZERO)
+          <= 0) {
+        closingTransaction(
+            entityId,
+            TransactionRequest.builder()
+                .accountNumber(transactionRequest.getAccountNumber())
+                .amount(BigDecimal.ZERO)
+                .build());
+      }
+
+      return ResponseEntity.ok(
+          TransactionResponse.builder().transactionId(transactionId).success(true).build());
+    } catch (AccountNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT)
+          .body(
+              TransactionResponse.builder()
+                  .transactionId(transactionId)
+                  .success(false)
+                  .reason(e.getMessage())
+                  .build());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(
+              TransactionResponse.builder()
+                  .transactionId(transactionId)
+                  .success(false)
+                  .reason(e.getMessage())
+                  .build());
+    }
+  }
+
+  public ResponseEntity<TransactionResponse> closingTransaction(
+      String entityId, TransactionRequest transactionRequest) {
+    UUID transactionId = UUID.randomUUID();
+    try {
+      AccountDetailedResponse account = getAccount(transactionRequest.getAccountNumber());
+      Balance balanceEntity = getBalance(transactionRequest.getAccountNumber());
+      Optional<Transaction> transaction =
+          transactionRepository.findByAccountNumberAndTransactionType(
+              transactionRequest.getAccountNumber(), TransactionType.ACCOUNT_CLOSING);
+
+      transactionRules.canExecuteClosingTransaction(
+          account, transactionRequest.getAmount(), transaction, balanceEntity);
+
+      Transaction closingTransaction =
+          transactionMapper.mapTransaction(entityId, transactionId, transactionRequest);
+      closingTransaction.setEntryType(EntryType.CREDIT);
+      closingTransaction.setTransactionType(TransactionType.ACCOUNT_CLOSING);
+
+      balance.setBalance(balanceEntity.getBalance().subtract(transactionRequest.getAmount()));
+      balance.setUpdatedAt(LocalDateTime.now());
+
+      transactionRepository.save(closingTransaction);
+      balanceRepository.save(balance);
+
+      accountServiceClient.closeAccount(
+          BasicAccountRequest.builder()
+              .accountNumber(transactionRequest.getAccountNumber())
+              .reason("Debt Balance Zero")
+              .build());
+
+      return ResponseEntity.ok(
+          TransactionResponse.builder().transactionId(transactionId).success(true).build());
+    } catch (AccountNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT)
+          .body(
+              TransactionResponse.builder()
+                  .transactionId(transactionId)
+                  .success(false)
+                  .reason(e.getMessage())
+                  .build());
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(
+              TransactionResponse.builder()
+                  .transactionId(transactionId)
+                  .success(false)
+                  .reason(e.getMessage())
+                  .build());
+    }
+  }
+
+  public ResponseEntity<TransactionsResponse> getTransactions(UUID accountNumber) {
+    try {
+      Optional<List<Transaction>> transactions =
+          transactionRepository.findByAccountNumber(accountNumber);
+
+      if (transactions.isEmpty() || transactions.get().getFirst() == null) {
+        throw new TransactionsNotFoundException("No transactions found for account");
+      }
+      TransactionsResponse response =
+          transactionMapper.mapTransactionResponse(
+              transactions.get(), getBalance(accountNumber).getBalance());
+      response.setSuccess(true);
+
+      return ResponseEntity.ok(response);
+    } catch (TransactionsNotFoundException | BalanceNotFoundException e) {
+      return ResponseEntity.status(HttpStatus.NO_CONTENT)
+          .body(TransactionsResponse.builder().success(false).reason(e.getMessage()).build());
     } catch (Exception e) {
       log.error(e.getMessage());
-      return TransactionResponse.builder().transactionId(transactionId).success(false).build();
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(TransactionsResponse.builder().success(false).reason(e.getMessage()).build());
     }
   }
 
-  public TransactionsResponse getTransactions(UUID accountNumber) {
-    Optional<List<Transaction>> transactions =
-        transactionRepository.findByAccountNumber(accountNumber);
-
-    if (transactions.isEmpty() || transactions.get().getFirst() == null) {
-      throw new TransactionsNotFoundException("No transactions found for account");
-    }
-    return transactionMapper.mapTransactionResponse(
-        transactions.get(), getBalance(accountNumber).getBalance());
-  }
-
-  public Balance getBalance(UUID accountNumber) {
+  private Balance getBalance(UUID accountNumber) {
     Optional<Balance> balance = balanceRepository.findByAccountNumber(accountNumber);
 
     if (balance.isEmpty()) {
-      throw new BalanceNotFoundException("Balance not found for account");
+      throw new BalanceNotFoundException("Balance not found");
     }
     return balance.get();
+  }
+
+  private AccountDetailedResponse getAccount(UUID accountNumber) {
+    AccountDetailedResponse account = accountServiceClient.getAccount(accountNumber);
+
+    if (!account.isSuccess()) {
+      throw new AccountNotFoundException("Account not found");
+    }
+    return account;
   }
 }
