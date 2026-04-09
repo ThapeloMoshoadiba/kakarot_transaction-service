@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class PaymentRules {
+public class TransactionRules {
 
   public void canPay(AccountDetailedResponse account, BigDecimal balance) {
     log.info("Running Payment Rules for account [{}]", account);
@@ -30,9 +30,23 @@ public class PaymentRules {
     log.info("Running Opening Transaction Rules");
     isAccountOpen(account);
     isAccountOpeningTransaction(transaction);
+    // there also should not be any transactions at all for this account
     isBalancePresent(balance);
 
     log.info("Opening Transaction Rules Passed for account [{}]", account);
+  }
+
+  public void canExecuteClosingTransaction(
+      AccountDetailedResponse account,
+      BigDecimal amount,
+      Optional<Transaction> transaction,
+      Balance balance) {
+    log.info("Running Closing Transaction Rules");
+    isAccountOpen(account);
+    isPaymentAmountValid(amount, balance);
+    isAccountClosingTransaction(transaction);
+
+    log.info("Closing Transaction Rules Passed for account [{}]", account);
   }
 
   private void isAccountOpen(AccountDetailedResponse account) {
@@ -53,9 +67,28 @@ public class PaymentRules {
     log.info("Balance is absent");
   }
 
+  private void isPaymentAmountValid(BigDecimal amount, Balance balance) {
+    if (amount.compareTo(BigDecimal.ZERO) == 0
+        && balance.getBalance().compareTo(BigDecimal.ZERO) > 0) {
+      throw new BusinessRuleException("Balance must be Zero to Close Account");
+    }
+    if (amount.compareTo(balance.getBalance()) < 0) {
+      throw new BusinessRuleException(
+          "Payment Amount must match or exceed balance to Close Account");
+    }
+    log.info("Balance Rules Assessed");
+  }
+
   private void isAccountOpeningTransaction(Optional<Transaction> transaction) {
     if (transaction.isPresent()) {
       throw new BusinessRuleException("Opening Transaction already exists");
+    }
+    log.info("Opening Transaction is absent");
+  }
+
+  private void isAccountClosingTransaction(Optional<Transaction> transaction) {
+    if (transaction.isPresent()) {
+      throw new BusinessRuleException("Closing Transaction already exists");
     }
     log.info("Opening Transaction is absent");
   }

@@ -25,6 +25,7 @@ app:
   integration:
     account-service:
       base-url: http://localhost:8081/api/v1/account-service/account
+      close-endpoint: /close
 
 server:
   port: 8082

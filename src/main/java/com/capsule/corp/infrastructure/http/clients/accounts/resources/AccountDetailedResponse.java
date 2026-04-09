@@ -11,6 +11,7 @@ import lombok.Data;
 public class AccountDetailedResponse {
   ClientDetails clientDetails;
   List<Account> accounts;
+
   String reason;
   boolean success;
 }
