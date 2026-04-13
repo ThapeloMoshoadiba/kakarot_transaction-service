@@ -1,5 +1,6 @@
 package com.capsule.corp.infrastructure.http.controller.resources.request;
 
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -12,6 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionRequest {
-  UUID accountNumber;
-  BigDecimal amount;
+
+  @NotNull UUID accountNumber;
+
+  @NotNull BigDecimal amount;
 }
