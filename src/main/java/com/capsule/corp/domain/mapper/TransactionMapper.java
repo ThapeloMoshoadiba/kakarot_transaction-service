@@ -22,8 +22,7 @@ public interface TransactionMapper {
   @Mapping(target = "timestamp", expression = "java(LocalDateTime.now())")
   @Mapping(target = "transactionId", source = "transactionId")
   @Mapping(target = "accountNumber", source = "transactionRequest.accountNumber")
-  Transaction mapTransaction(
-      String entityId, UUID transactionId, TransactionRequest transactionRequest);
+  Transaction mapTransaction(String entityId, UUID transactionId, TransactionRequest transactionRequest);
 
   TransactionsResponse mapTransactionResponse(List<Transaction> transactions, BigDecimal balance);
 

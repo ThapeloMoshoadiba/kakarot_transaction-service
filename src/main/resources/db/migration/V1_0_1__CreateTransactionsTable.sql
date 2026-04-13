@@ -4,7 +4,7 @@ CREATE TABLE transactions
     account_number                  UUID NOT NULL,
     transaction_type                VARCHAR(20) NOT NULL,
     entry_type                      VARCHAR(10) NOT NULL,
-    timestamp                       TIMESTAMP,
+    timestamp                       TIMESTAMP NOT NULL,
     amount                          NUMERIC(18, 2) NOT NULL,
     initiator                       VARCHAR(20) NOT NULL
 );

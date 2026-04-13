@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BasicAccountRequest {
-
-  UUID accountNumber;
-  String reason;
+  private UUID accountNumber;
+  private String reason;
 }

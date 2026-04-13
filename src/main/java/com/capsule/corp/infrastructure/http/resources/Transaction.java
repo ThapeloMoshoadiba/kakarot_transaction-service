@@ -26,16 +26,16 @@ public class Transaction {
 
   @Id
   @Column(name = "transaction_id", nullable = false, updatable = false)
-  UUID transactionId;
+  private UUID transactionId;
 
-  UUID accountNumber;
-  LocalDateTime timestamp;
-  BigDecimal amount;
-  String initiator;
-
-  @Enumerated(EnumType.STRING)
-  TransactionType transactionType;
+  private UUID accountNumber;
+  private LocalDateTime timestamp;
+  private BigDecimal amount;
+  private String initiator;
 
   @Enumerated(EnumType.STRING)
-  EntryType entryType;
+  private TransactionType transactionType;
+
+  @Enumerated(EnumType.STRING)
+  private EntryType entryType;
 }

@@ -15,32 +15,32 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ClientDetails {
 
-  UUID clientId;
-  LocalDateTime createdAt;
-  LocalDateTime updatedAt;
-  String cifNumber;
+  private UUID clientId;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
+  private String cifNumber;
 
-  String title; // might need the title enum
-  String firstName;
-  String middleName;
-  String lastName;
-  String idNumber;
-  String gender; // might need the gender enum
-  LocalDate dateOfBirth;
-  String address;
-  String cellphoneNumber;
-  String email;
+  private String title;
+  private String firstName;
+  private String middleName;
+  private String lastName;
+  private String idNumber;
+  private String gender;
+  private LocalDate dateOfBirth;
+  private String address;
+  private String cellphoneNumber;
+  private String email;
 
-  String credit; // might need the credit enum
-  String employmentStatus; // might need the employmentStatus enum
-  String sourceOfFunds; // might need the sourceOfFunds enum
-  BigDecimal verifiedAnnualIncome;
+  private String credit;
+  private String employmentStatus;
+  private String sourceOfFunds;
+  private BigDecimal verifiedAnnualIncome;
 
-  String clientStatus; // might need the clientStatus enum
+  private String clientStatus;
 
-  LocalDateTime blockedAt;
-  String reasonForBlock;
+  private LocalDateTime blockedAt;
+  private String reasonForBlock;
 
-  LocalDateTime unblockedAt;
-  String reasonForUnblock;
+  private LocalDateTime unblockedAt;
+  private String reasonForUnblock;
 }

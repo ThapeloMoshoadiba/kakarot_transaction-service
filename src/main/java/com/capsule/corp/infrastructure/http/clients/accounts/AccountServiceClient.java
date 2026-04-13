@@ -1,6 +1,7 @@
 package com.capsule.corp.infrastructure.http.clients.accounts;
 
 import com.capsule.corp.common.config.AppConfiguration;
+import com.capsule.corp.common.exception.AccountNotFoundException;
 import com.capsule.corp.infrastructure.http.clients.accounts.resources.AccountDetailedResponse;
 import com.capsule.corp.infrastructure.http.clients.accounts.resources.BasicAccountRequest;
 import java.util.UUID;
@@ -33,6 +34,10 @@ public class AccountServiceClient {
             .contentType(MediaType.APPLICATION_JSON)
             .retrieve()
             .toEntity(new ParameterizedTypeReference<>() {});
+
+    if (!response.getStatusCode().is2xxSuccessful()) {
+      throw new AccountNotFoundException("Error Retrieving Account Details");
+    }
 
     return response.getBody();
   }

@@ -8,10 +8,10 @@ import lombok.Data;
 @Data
 @Builder
 public class AccountSummaryResponse {
-  UUID accountNumber;
-  String accountStatus;
-  BigDecimal initialCreditAmount;
+  private UUID accountNumber;
+  private String accountStatus;
+  private BigDecimal initialCreditAmount;
 
-  String reason;
-  boolean success;
+  private String reason;
+  private boolean success;
 }

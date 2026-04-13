@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TransactionRequest {
 
-  @NotNull UUID accountNumber;
+  @NotNull private UUID accountNumber;
 
-  @NotNull BigDecimal amount;
+  @NotNull private BigDecimal amount;
 }

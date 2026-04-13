@@ -1,6 +1,5 @@
-package com.capsule.corp.infrastructure.http.controller.resources.response;
+package com.capsule.corp.infrastructure.http.resources;
 
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransactionResponse {
+public class GlobalErrorResponse {
 
-  private UUID transactionId;
+  @Builder.Default private boolean success = false;
+  private String reason;
 }
