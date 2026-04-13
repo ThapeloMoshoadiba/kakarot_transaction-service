@@ -6,6 +6,7 @@ import com.capsule.corp.infrastructure.http.controller.resources.response.Transa
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +38,7 @@ public class TransactionController {
   @PutMapping("/open")
   // include entityId in header to figure out source OR can we get it from JWT token?
   public ResponseEntity<TransactionResponse> openingTransaction(
-      @RequestBody final TransactionRequest transactionRequest) {
+      @Valid @RequestBody final TransactionRequest transactionRequest) {
     return transactionService.openingTransaction("", transactionRequest);
   }
 
@@ -45,7 +46,7 @@ public class TransactionController {
   @PutMapping("/pay")
   // include entityId in header to figure out source OR can we get it from JWT token?
   public ResponseEntity<TransactionResponse> payment(
-      @RequestBody final TransactionRequest transactionRequest) {
+      @Valid @RequestBody final TransactionRequest transactionRequest) {
     return transactionService.paymentTransaction("", transactionRequest);
   }
 
@@ -60,7 +61,7 @@ public class TransactionController {
   @PutMapping("/close")
   // include entityId in header to figure out source OR can we get it from JWT token?
   public ResponseEntity<TransactionResponse> closingTransaction(
-      @RequestBody final TransactionRequest transactionRequest) {
+      @Valid @RequestBody final TransactionRequest transactionRequest) {
     return transactionService.closingTransaction("", transactionRequest);
   }
 }
