@@ -14,6 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TransactionsResponse {
 
-  List<Transaction> transactions;
-  BigDecimal balance;
+  private List<Transaction> transactions;
+  private BigDecimal balance;
 }

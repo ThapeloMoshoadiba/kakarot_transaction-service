@@ -22,10 +22,10 @@ public class Balance {
 
   @Id
   @Column(name = "id", nullable = false, updatable = false)
-  UUID id;
+  private UUID id;
 
-  LocalDateTime createdAt;
-  LocalDateTime updatedAt;
-  UUID accountNumber;
-  BigDecimal balance;
+  private LocalDateTime createdAt;
+  private LocalDateTime updatedAt;
+  private UUID accountNumber;
+  private BigDecimal balance;
 }

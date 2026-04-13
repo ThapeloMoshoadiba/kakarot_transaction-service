@@ -6,9 +6,11 @@ import com.capsule.corp.infrastructure.http.controller.resources.response.Transa
 import com.capsule.corp.infrastructure.http.controller.resources.response.TransactionsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,21 +37,31 @@ public class TransactionController {
   @Operation(summary = "Open Account Transaction")
   @PutMapping("/open")
   // include entityId in header to figure out source OR can we get it from JWT token?
-  public TransactionResponse openingTransaction(
-      @RequestBody final TransactionRequest transactionRequest) {
+  public ResponseEntity<TransactionResponse> openingTransaction(
+      @Valid @RequestBody final TransactionRequest transactionRequest) {
     return transactionService.openingTransaction("", transactionRequest);
   }
 
   @Operation(summary = "Make Payment")
   @PutMapping("/pay")
   // include entityId in header to figure out source OR can we get it from JWT token?
-  public TransactionResponse payment(@RequestBody final TransactionRequest transactionRequest) {
+  public ResponseEntity<TransactionResponse> payment(
+      @Valid @RequestBody final TransactionRequest transactionRequest) {
     return transactionService.paymentTransaction("", transactionRequest);
   }
 
   @Operation(summary = "Retrieve Transactions")
   @GetMapping
-  public TransactionsResponse getTransactions(@RequestParam final UUID accountNumber) {
+  public ResponseEntity<TransactionsResponse> getTransactions(
+      @RequestParam final UUID accountNumber) {
     return transactionService.getTransactions(accountNumber);
+  }
+
+  @Operation(summary = "Close Account Transaction")
+  @PutMapping("/close")
+  // include entityId in header to figure out source OR can we get it from JWT token?
+  public ResponseEntity<TransactionResponse> closingTransaction(
+      @Valid @RequestBody final TransactionRequest transactionRequest) {
+    return transactionService.closingTransaction("", transactionRequest);
   }
 }

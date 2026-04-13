@@ -13,6 +13,6 @@ public class AppConfiguration {
   @Component
   @ConfigurationProperties(prefix = "app.integration.account-service")
   public class AccountServiceConfig extends IntegrationConfig {
-    // private String someEndpoint;
+    private String closeEndpoint;
   }
 }
